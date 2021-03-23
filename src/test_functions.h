@@ -21,14 +21,12 @@
 
 
 // Exported Functions ----------------------------------------------------------
-void TF_RelayConnect (void);
-void TF_RelayACPOS (void);
-void TF_RelayACNEG (void);
-void TF_RelayFiftyHz (void);
-void TF_OnlySyncAndPolarity (void);
-void TF_Check_Sequence_Ready (void);
+void TF_Usart1_Gpio_Input (void);
+void TF_Usart1_Multiple (void);
+void TF_Usart1_TxRx (void);
 
-#endif    /* _GEN_SIGNAL_H_ */
+
+#endif    /* _TEST_FUNCTIONS_H_ */
 
 //--- end of file ---//
 

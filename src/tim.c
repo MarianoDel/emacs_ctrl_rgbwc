@@ -10,10 +10,9 @@
 
 // Includes --------------------------------------------------------------------
 #include "tim.h"
-#include "pwm_defs.h"
 #include "stm32f0xx.h"
 #include "hard.h"
-#include "sync.h"
+
 
 // Externals -------------------------------------------------------------------
 extern volatile unsigned short wait_ms_var;
@@ -67,6 +66,7 @@ void Wait_ms (unsigned short wait)
 // @param  None
 // @retval None
 //------------------------------------------//
+#define DUTY_100_PERCENT    1000
 void TIM_1_Init (void)
 {
     if (!RCC_TIM1_CLK)
@@ -282,7 +282,7 @@ void TIM17_IRQHandler (void)
 {
     if (TIM17->SR & 0x01)
     {
-        SYNC_Zero_Crossing_Handler();
+        // SYNC_Zero_Crossing_Handler();
         TIM17->SR = 0x00;    //flag down
     }    
 }

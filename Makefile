@@ -26,11 +26,13 @@ BIN  = $(CP) -O binary -S
 MCU  = cortex-m0
 
 # List all default C defines here, like -D_DEBUG=1
-#para el micro STM32F051C8T6
+# for STM32F103RCT6 micro
+# DDEFS = -DSTM32F10X_HD
+# for STM32F051C8T6 micro
 # DDEFS = -DSTM32F051
-#para el micro STM32F030K6T6
+# for STM32F030K6T6 micro or STM32F030R8T6
 DDEFS = -DSTM32F030
-#para el micro STM32G030J6M6
+# for STM32G030J6M6 micro
 # DDEFS = -DSTM32G030xx
 
 # List all default ASM defines here, like -D_DEBUG=1
@@ -67,19 +69,17 @@ SRC  = ./src/main.c
 SRC += $(BOOTDIR)/system_stm32f0xx.c
 SRC += $(BOOTDIR)/syscalls/syscalls.c
 
-SRC += ./src/adc.c
-SRC += ./src/dsp.c
-SRC += ./src/flash_program.c
+# SRC += ./src/adc.c
+# SRC += ./src/dsp.c
+# SRC += ./src/flash_program.c
 SRC += ./src/gpio.c
 SRC += ./src/hard.c
 SRC += ./src/it.c
 SRC += ./src/tim.c
 # SRC += ./src/spi.c
 SRC += ./src/uart.c
-SRC += ./src/dma.c
-SRC += ./src/sync.c
+# SRC += ./src/dma.c
 SRC += ./src/test_functions.c
-SRC += ./src/gen_signal.c
 
 
 ## Core Support

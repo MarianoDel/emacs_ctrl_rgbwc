@@ -1,176 +1,175 @@
-//---------------------------------------------
+//-----------------------------------------------------------------
+// #### COLOR CONTROL BOARD RGBWC PROJECT  F030 - Custom Board ####
 // ##
 // ## @Author: Med
 // ## @Editor: Emacs - ggtags
 // ## @TAGS:   Global
-// ## @CPU:    STM32F030
 // ##
-// #### HARD.C ################################
-//---------------------------------------------
-
-// Includes --------------------------------------------------------------------
+// #### HARD.C ####################################################
+//-----------------------------------------------------------------
 #include "hard.h"
-#include "tim.h"
 #include "stm32f0xx.h"
-#include "pwm_defs.h"
-#include "uart.h"
-
-#include <stdio.h>
-
-// Private Types Constants and Macros ------------------------------------------
-typedef enum
-{    
-    START_BLINKING = 0,
-    WAIT_TO_OFF,
-    WAIT_TO_ON,
-    WAIT_NEW_CYCLE
-} led_state_t;
+#include "tim.h"
 
 
-// Externals variables ---------------------------------------------------------
-extern volatile unsigned short timer_led;
-// extern volatile unsigned short adc_ch[];
+// Module Private Types & Macros -----------------------------------------------
 
 
+// Externals -------------------------------------------------------------------
 
 
 // Globals ---------------------------------------------------------------------
-// para el led
-led_state_t led_state = START_BLINKING;
-unsigned char blink = 0;
-unsigned char how_many_blinks = 0;
+//for timers or timeouts
+volatile unsigned char switches_timer = 0;
+
+
+// Module Private Functions ----------------------------------------------------
 
 
 // Module Functions ------------------------------------------------------------
-//cambia configuracion de bips del LED
-void ChangeLed (unsigned char how_many)
+
+
+void HARD_Timeouts (void)
 {
-    how_many_blinks = how_many;
-    led_state = START_BLINKING;
+    if (switches_timer)
+        switches_timer--;
 }
 
-//mueve el LED segun el estado del Pote
-void UpdateLed (void)
+
+
+
+#define SWITCHES_ROOF    200    //1000 ms
+#define SWITCHES_THRESHOLD_MIN	40    //200 ms
+#define SWITCHES_TIMER_RELOAD    5
+
+
+unsigned char s_red_cntr = 0;
+unsigned char s_green_cntr = 0;
+unsigned char s_blue_cntr = 0;
+unsigned char s_warm_cntr = 0;
+unsigned char s_cold_cntr = 0;
+
+unsigned char Check_S_Red (void)
 {
-    switch (led_state)
+    if (s_red_cntr > SWITCHES_THRESHOLD_MIN)
+        return 1;
+    else
+        return 0;
+}
+
+
+unsigned char Check_S_Green (void)
+{
+    if (s_green_cntr > SWITCHES_THRESHOLD_MIN)
+        return 1;
+    else
+        return 0;
+}
+
+
+unsigned char Check_S_Blue (void)
+{
+    if (s_blue_cntr > SWITCHES_THRESHOLD_MIN)
+        return 1;
+    else
+        return 0;
+}
+
+
+unsigned char Check_S_Warm (void)
+{
+    if (s_warm_cntr > SWITCHES_THRESHOLD_MIN)
+        return 1;
+    else
+        return 0;
+}
+
+
+unsigned char Check_S_Cold (void)
+{
+    if (s_cold_cntr > SWITCHES_THRESHOLD_MIN)
+        return 1;
+    else
+        return 0;
+}
+
+
+void UpdateSwitches (void)
+{
+    if (!switches_timer)
     {
-        case START_BLINKING:
-            blink = how_many_blinks;
-            
-            if (blink)
-            {
-                LED_ON;
-                timer_led = 200;
-                led_state++;
-                blink--;
-            }
-            break;
+        if (S_RED)
+        {
+            if (s_red_cntr < SWITCHES_ROOF)
+                s_red_cntr++;
+        }
+        else
+        {
+            if (s_red_cntr > 10)
+                s_red_cntr -= 10;
+            else
+                s_red_cntr--;
+        }
 
-        case WAIT_TO_OFF:
-            if (!timer_led)
-            {
-                LED_OFF;
-                timer_led = 200;
-                led_state++;
-            }
-            break;
+        if (S_GREEN)
+        {
+            if (s_green_cntr < SWITCHES_ROOF)
+                s_green_cntr++;
+        }
+        else
+        {
+            if (s_green_cntr > 10)
+                s_green_cntr -= 10;
+            else
+                s_green_cntr--;
+        }
 
-        case WAIT_TO_ON:
-            if (!timer_led)
-            {
-                if (blink)
-                {
-                    blink--;
-                    timer_led = 200;
-                    led_state = WAIT_TO_OFF;
-                    LED_ON;
-                }
-                else
-                {
-                    led_state = WAIT_NEW_CYCLE;
-                    timer_led = 2000;
-                }
-            }
-            break;
+        if (S_BLUE)
+        {
+            if (s_blue_cntr < SWITCHES_ROOF)
+                s_blue_cntr++;
+        }
+        else
+        {
+            if (s_blue_cntr > 10)
+                s_blue_cntr -= 10;
+            else
+                s_blue_cntr--;
+        }
 
-        case WAIT_NEW_CYCLE:
-            if (!timer_led)
-                led_state = START_BLINKING;
+        if (S_WARM)
+        {
+            if (s_warm_cntr < SWITCHES_ROOF)
+                s_warm_cntr++;
+        }
+        else
+        {
+            if (s_warm_cntr > 10)
+                s_warm_cntr -= 10;
+            else
+                s_warm_cntr--;
+        }
 
-            break;
-
-        default:
-            led_state = START_BLINKING;
-            break;
-    }
+        if (S_COLD)
+        {
+            if (s_cold_cntr < SWITCHES_ROOF)
+                s_cold_cntr++;
+        }
+        else
+        {
+            if (s_cold_cntr > 10)
+                s_cold_cntr -= 10;
+            else
+                s_cold_cntr--;
+        }
+        
+        
+        switches_timer = SWITCHES_TIMER_RELOAD;
+    }       
 }
 
 
-void WelcomeCodeFeatures (char * str)
-{
-    // Main Program Type
-#ifdef GRID_TIED_FULL_CONECTED
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(GRID_TIED_FULL_CONECTED));
-    Usart1Send(str);
-    Wait_ms(30);
-#ifdef GRID_TIED_ONLY_SYNC_AND_POLARITY
-    sprintf(str,"  %s\n", str_macro(GRID_TIED_ONLY_SYNC_AND_POLARITY));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
-#endif    //GRID_TIED_FULL_CONECTED
-    
-    // Features mostly on hardware
-#ifdef USE_FREQ_48KHZ
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(USE_FREQ_48KHZ));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
-#ifdef USE_FREQ_24KHZ
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(USE_FREQ_24KHZ));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
-#ifdef USE_FREQ_16KHZ
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(USE_FREQ_16KHZ));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
-#ifdef USE_FREQ_12KHZ
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(USE_FREQ_12KHZ));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
-#ifdef USE_FREQ_9_6KHZ
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(USE_FREQ_9_6KHZ));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
 
-#ifdef WITH_AC_SYNC_INT
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(WITH_AC_SYNC_INT));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
-    
-#ifdef WITH_OVERCURRENT_SHUTDOWN
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(WITH_OVERCURRENT_SHUTDOWN));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
+//--- end of file ---//
 
-#ifdef WITH_SOFT_OVERCURRENT_SHUTDOWN
-    sprintf(str,"[%s] %s\n", __FILE__, str_macro(WITH_SOFT_OVERCURRENT_SHUTDOWN));
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
 
-#ifdef WITH_FEW_CYCLES_OF_50HZ
-    sprintf(str,"[%s] %s cycles: %d\n", __FILE__, str_macro(WITH_FEW_CYCLES_OF_50HZ), CYCLES_OF_50HZ);
-    Usart1Send(str);
-    Wait_ms(30);    
-#endif
-    
-}
-
-//---- end of file ----//

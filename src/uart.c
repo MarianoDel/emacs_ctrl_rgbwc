@@ -8,7 +8,7 @@
 // #### UART.C ################################
 //---------------------------------------------
 
-/* Includes ------------------------------------------------------------------*/
+// Includes --------------------------------------------------------------------
 #include "hard.h"
 #include "stm32f0xx.h"
 #include "uart.h"
@@ -16,41 +16,25 @@
 #include <string.h>
 
 
-
-
-//--- Private typedef ---//
-//--- Private define ---//
-//--- Private macro ---//
-
-//#define USE_USARTx_TIMEOUT
-
-
-
-//--- Externals variables ---//
-
-//--- Externals del GPS ---//
-extern volatile unsigned char usart1_mini_timeout;
-extern volatile unsigned char usart1_pckt_ready;
+// Externals -------------------------------------------------------------------
 extern volatile unsigned char usart1_have_data;
 
-extern volatile unsigned char tx1buff[];
-extern volatile unsigned char rx1buff[];
 
-//--- Private variables ---//
+// Globals ---------------------------------------------------------------------
+#define SIZEOF_DATA    128
+volatile unsigned char tx1buff [SIZEOF_DATA];
+volatile unsigned char rx1buff [SIZEOF_DATA];
+
 volatile unsigned char * ptx1;
 volatile unsigned char * ptx1_pckt_index;
 volatile unsigned char * prx1;
 
 
-//Reception buffer.
-
-//Transmission buffer.
-
-//--- Private function prototypes ---//
-//--- Private functions ---//
+// Module Private Functions ----------------------------------------------------
 
 
-unsigned char ReadUsart1Buffer (unsigned char * bout, unsigned short max_len)
+// Module Functions ------------------------------------------------------------
+unsigned char Usart1ReadBuffer (unsigned char * bout, unsigned short max_len)
 {
     unsigned int len;
 
@@ -153,13 +137,10 @@ void Usart1SendSingle(unsigned char tosend)
 }
 
 
-void USART1Config(void)
+void Usart1Config(void)
 {
-    unsigned int temp;
-
     if (!USART1_CLK)
         USART1_CLK_ON;
-
 
     ptx1 = tx1buff;
     ptx1_pckt_index = tx1buff;
@@ -169,12 +150,14 @@ void USART1Config(void)
 //	USART1->CR2 |= USART_CR2_STOP_1;	//2 bits stop
 //	USART1->CR1 = USART_CR1_RE | USART_CR1_TE | USART_CR1_UE;
 //	USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_UE;	//SIN TX
-    USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_TE | USART_CR1_UE;	//para pruebas TX
+    USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_TE | USART_CR1_UE;
 
-    temp = GPIOA->AFR[1];
-    temp &= 0xFFFFF00F;
-    temp |= 0x00000110;	//PA10 -> AF1 PA9 -> AF1
-    GPIOA->AFR[1] = temp;
+    // pins redirection
+    unsigned int temp;
+    temp = GPIOA->AFR[0];
+    temp &= 0xFFFF00FF;
+    temp |= 0x00001100;    //PA3 -> AF1 PA2 -> AF1
+    GPIOA->AFR[0] = temp;
 
     NVIC_EnableIRQ(USART1_IRQn);
     NVIC_SetPriority(USART1_IRQn, 5);

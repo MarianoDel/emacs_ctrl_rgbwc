@@ -15,6 +15,7 @@
 #include "gpio.h"
 #include "uart.h"
 #include "hard.h"
+#include "comm.h"
 #include "test_functions.h"
 
 #include <stdio.h>
@@ -33,7 +34,8 @@ volatile unsigned short wait_ms_var = 0;
 // Globals ---------------------------------------------------------------------
 typedef enum {
     CHECKING_SWITCHES = 0,
-    SEND_DATA_WAIT_ACK
+    SEND_DATA,
+    SENDED_DATA_WAIT_ACK
     
 } main_state_e;
 
@@ -52,6 +54,8 @@ void SysTickError (void);
 int main(void)
 {
     main_state_e main_state = CHECKING_SWITCHES;
+    char color_send [20] = { 0 };
+    unsigned char sended_cntr = 0;
 
     // Gpio Configuration.
     GPIO_Config();
@@ -67,7 +71,6 @@ int main(void)
 
     // Peripherals Activation
     Usart1Config();
-
     
     
     while (1)
@@ -75,14 +78,78 @@ int main(void)
         switch (main_state)
         {
         case CHECKING_SWITCHES:
+            if (S_RED)
+            {
+                strcpy(color_send, "red\n");
+                sended_cntr = 5;
+                main_state = SEND_DATA;
+            }
+            
+            if (S_GREEN)
+            {
+                strcpy(color_send, "green\n");
+                sended_cntr = 5;
+                main_state = SEND_DATA;
+            }
+            
+            if (S_BLUE)
+            {
+                strcpy(color_send, "blue\n");
+                sended_cntr = 5;
+                main_state = SEND_DATA;
+            }
+            
+            if (S_WARM)
+            {
+                strcpy(color_send, "warm\n");
+                sended_cntr = 5;
+                main_state = SEND_DATA;
+            }
+            
+            if (S_COLD)
+            {
+                strcpy(color_send, "cold\n");
+                sended_cntr = 5;
+                main_state = SEND_DATA;
+            }
+
             break;
 
-        case SEND_DATA_WAIT_ACK:
+        case SEND_DATA:
+            if (sended_cntr)
+            {
+                sended_cntr--;
+                timer_standby = 50;
+                CommFlushAck();    //flush ok and nok
+                Usart1Send(color_send);
+                main_state = SENDED_DATA_WAIT_ACK;
+            }
+            else
+                main_state = CHECKING_SWITCHES;
+            
             break;
 
+        case SENDED_DATA_WAIT_ACK:
+            if (CommCheckOK())
+            {
+                //sended ok!
+                main_state = CHECKING_SWITCHES;
+            }
+
+            if ((CommCheckNOK()) || (!timer_standby))
+            {
+                //error in comms or timed out
+                main_state = SEND_DATA;
+            }
+            
+            break;
+            
         default:
             break;
         }
+
+        // Continuous checks
+        UpdateCommunications();
     }
     
     return 0;

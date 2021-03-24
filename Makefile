@@ -79,6 +79,7 @@ SRC += ./src/tim.c
 # SRC += ./src/spi.c
 SRC += ./src/uart.c
 # SRC += ./src/dma.c
+SRC += ./src/comm.c
 SRC += ./src/test_functions.c
 
 
@@ -204,31 +205,13 @@ tests:
 	gcc src/tests.c
 	./a.out
 
-tests_signals:
-	# tests on modules with no dependencies with hardware
-	gcc -c src/dsp.c -I. $(INCDIR)
-	gcc -c src/gen_signal.c -I. $(INCDIR)
-	gcc -c src/tests_vector_utils.c -I. $(INCDIR)
-	gcc src/tests_signals.c dsp.o gen_signal.o  tests_vector_utils.o -lm
+tests_comm:
+	# first module objects to test
+	gcc -c src/comm.c -I. $(INCDIR)
+	# second auxiliary helper modules
+	gcc -c src/tests_ok.c -I $(INCDIR)
+	gcc src/tests_comm.c comm.o tests_ok.o
 	./a.out
-
-tests_simul:
-	# tests on modules with no dependencies with hardware
-	gcc -c src/dsp.c -I. $(INCDIR)
-	gcc -c src/tests_vector_utils.c -I. $(INCDIR)
-	gcc -c src/tests_recursive_utils.c -I. $(INCDIR)
-	gcc src/tests_simul.c dsp.o tests_vector_utils.o tests_recursive_utils.o -lm
-	./a.out
-
-tests_signals_simul:
-	# tests on modules with no dependencies with hardware
-	gcc -c src/dsp.c -I. $(INCDIR)
-	gcc -c src/gen_signal.c -I. $(INCDIR)
-	gcc -c src/tests_vector_utils.c -I. $(INCDIR)
-	gcc -c src/tests_recursive_utils.c -I. $(INCDIR)
-	gcc src/tests_signals_simul.c dsp.o gen_signal.o tests_vector_utils.o tests_recursive_utils.o -lm
-	./a.out
-
 
 
 # *** EOF ***

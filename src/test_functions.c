@@ -74,7 +74,7 @@ void TF_Usart1_Multiple (void)
 
     while (1)
     {
-        Usart1Send("Mariano\n");
+        Usart1Send("Maximo\r\n");
         Wait_ms(1000);
     }
 }

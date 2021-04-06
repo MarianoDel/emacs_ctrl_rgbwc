@@ -35,7 +35,8 @@ volatile unsigned short wait_ms_var = 0;
 typedef enum {
     CHECKING_SWITCHES = 0,
     SEND_DATA,
-    SENDED_DATA_WAIT_ACK
+    SENDED_DATA_WAIT_ACK,
+    WAIT_FREE_SWITCHES
     
 } main_state_e;
 
@@ -65,7 +66,7 @@ int main(void)
         SysTickError();
 
     // Test Functions
-    TF_Usart1_Gpio_Input();
+    // TF_Usart1_Gpio_Input();
     // TF_Usart1_Multiple();
     // TF_Usart1_TxRx();
 
@@ -133,7 +134,8 @@ int main(void)
             if (CommCheckOK())
             {
                 //sended ok!
-                main_state = CHECKING_SWITCHES;
+                main_state = WAIT_FREE_SWITCHES;
+                timer_standby = 2000;
             }
 
             if ((CommCheckNOK()) || (!timer_standby))
@@ -141,6 +143,20 @@ int main(void)
                 //error in comms or timed out
                 main_state = SEND_DATA;
             }
+            
+            break;
+
+        case WAIT_FREE_SWITCHES:
+            if (!timer_standby)
+                main_state = CHECKING_SWITCHES;
+
+            if (!(S_RED) &&
+                !(S_GREEN) &&
+                !(S_BLUE) &&
+                !(S_WARM) &&
+                !(S_COLD) &&
+                (timer_standby < 1800))
+                main_state = CHECKING_SWITCHES;
             
             break;
             

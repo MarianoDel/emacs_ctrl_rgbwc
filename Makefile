@@ -201,7 +201,7 @@ clean:
 	rm -f *.out
 
 tests:
-	# simple functions tests, copy functions to test into main
+	# simple functions tests, copy functions to tests module into main
 	gcc src/tests.c
 	./a.out
 

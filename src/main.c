@@ -79,35 +79,35 @@ int main(void)
         switch (main_state)
         {
         case CHECKING_SWITCHES:
-            if (S_RED)
+            if (Check_S_Red())
             {
                 strcpy(color_send, "red\n");
                 sended_cntr = 5;
                 main_state = SEND_DATA;
             }
             
-            if (S_GREEN)
+            if (Check_S_Green())
             {
                 strcpy(color_send, "green\n");
                 sended_cntr = 5;
                 main_state = SEND_DATA;
             }
             
-            if (S_BLUE)
+            if (Check_S_Blue())
             {
                 strcpy(color_send, "blue\n");
                 sended_cntr = 5;
                 main_state = SEND_DATA;
             }
             
-            if (S_WARM)
+            if (Check_S_Warm())
             {
                 strcpy(color_send, "warm\n");
                 sended_cntr = 5;
                 main_state = SEND_DATA;
             }
             
-            if (S_COLD)
+            if (Check_S_Cold())
             {
                 strcpy(color_send, "cold\n");
                 sended_cntr = 5;
@@ -150,12 +150,11 @@ int main(void)
             if (!timer_standby)
                 main_state = CHECKING_SWITCHES;
 
-            if (!(S_RED) &&
-                !(S_GREEN) &&
-                !(S_BLUE) &&
-                !(S_WARM) &&
-                !(S_COLD) &&
-                (timer_standby < 1800))
+            if (!(Check_S_Red()) &&
+                !(Check_S_Green()) &&
+                !(Check_S_Blue()) &&
+                !(Check_S_Warm()) &&
+                !(Check_S_Cold()))
                 main_state = CHECKING_SWITCHES;
             
             break;
@@ -173,7 +172,6 @@ int main(void)
 
 //--- End of Main ---//
 
-
 void TimingDelay_Decrement(void)
 {
     if (wait_ms_var)
@@ -181,6 +179,8 @@ void TimingDelay_Decrement(void)
 
     if (timer_standby)
         timer_standby--;
+
+    UpdateSwitches();
 
 }
 

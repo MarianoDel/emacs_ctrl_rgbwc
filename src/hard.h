@@ -61,6 +61,14 @@
 
 // End of Gpios Config -------------------------------------
 
+// Module Exported Functions ---------------------------------------------------
+unsigned char Check_S_Red (void);
+unsigned char Check_S_Green (void);
+unsigned char Check_S_Blue (void);
+unsigned char Check_S_Warm (void);
+unsigned char Check_S_Cold (void);
+
+void UpdateSwitches (void);
 
     
 #endif /* _HARD_H_ */
